@@ -1,94 +1,280 @@
-# AdonisJS API Boilerplate
 
-<div align="center">
-  <img src="https://img.shields.io/static/v1?label=PRs&message=welcome&style=flat-square&color=5e17eb&labelColor=000000" alt="PRs welcome!" />
 
-  <img alt="License" src="https://img.shields.io/github/license/caiodomingues/adonis-api-boilerplate?style=flat-square&color=5e17eb&labelColor=000000">
-</div>
+# 📦 Workflow
 
-<div align="center">
-  <sub>Created by <a href="https://twitter.com/caiodomingues">Caio Domingues</a></sub>
-</div>
+The Product Management API is designed as a mini Order Management System.
 
-## Features
+The application supports the complete order lifecycle:
 
-- ⚡️ AdonisJS 5.4
-- 📥 Lucid ORM
-- 🔐 Adonis Auth (Sessions, Basic Auth, API Tokens)
-- ⛑ TypeScript
-- 📏 ESLint — Find and fix problems in your code
-- 💖 Prettier — Code Formatter for consistent style
-- ⚙️ CORS Production-only
-- ⚙️ EditorConfig - Maintain consistent coding styles across editors and IDEs\
-- ⚙️ Resource Command - Create a resource file for your model and customize endpoint responses
-
-## Quick Start
-
-The best way to start with this template is using cloning the repo:
-
-```bash
-git clone https://github.com/caiodomingues/adonis-api-boilerplate.git
+```text
+User Authentication
+        ↓
+Manage Products
+        ↓
+Manage Customers
+        ↓
+Create Order
+        ↓
+Add Products to Order
+        ↓
+Store Order Information
+        ↓
+Generate Order Response
 ```
 
-Since this boilerplate is a quickstart, you will need to configure Lucid ORM and Auth. Please make sure to do it in that order:
+---
 
-```bash
-# select your options and follow the instructions for each database driver.
-node ace configure @adonisjs/lucid
+# 🗄 Database Design
+
+The application uses a relational database structure consisting of the following tables:
+
+| Table       | Purpose                                    |
+| ----------- | ------------------------------------------ |
+| users       | Stores registered users                    |
+| products    | Stores product information                 |
+| customers   | Stores customer details                    |
+| orders      | Stores order headers                       |
+| order_items | Stores products associated with each order |
+
+---
+
+## Database Relationships
+
+```text
+
+Customers
+  │
+  └─────────────► Orders
+                        │
+                        │
+                        ▼
+                  Order Items
+                        │
+                        │
+                        ▼
+                    Products
 ```
 
-Make sure to edit your `.env` file with your database connection information.
+---
+
+# ✨ Features
+
+## Authentication & Authorization
+
+* User Registration
+* User Login
+* JWT Authentication
+* Protected Routes
+* Permission-Based Access Control
+
+---
+
+## Product Management
+
+* Create Product
+* View Products
+* Update Product
+* Delete Product
+* Product Validation
+
+---
+
+## Customer Management
+
+* Create Customer
+* View Customers
+* Update Customer
+* Delete Customer
+
+---
+
+## Order Management
+
+* Create Orders
+* Associate Customer with Order
+* Add Multiple Products to Order
+* Calculate Order Total
+* Store Order Items
+* View Order Details
+
+---
+
+## Database Operations
+
+* Database Migrations
+* Foreign Key Relationships
+* Lucid ORM Models
+* Query Builder Support
+
+---
+
+# 📁 Project Structure
 
 ```bash
-# select your options and follow the instructions
-node ace configure @adonisjs/auth
-
-node ace migration:run
+app/
+│
+├── Controllers/
+│   ├── AuthController.ts
+│   ├── ProductsController.ts
+│   ├── CustomersController.ts
+│   └── OrdersController.ts
+│
+├── Models/
+│   ├── User.ts
+│   ├── Product.ts
+│   ├── Customer.ts
+│   ├── Order.ts
+│   └── OrderItem.ts
+│
+├── Middleware/
+│   ├── JwtAuth.ts
+│   └── Permission.ts
+│
+├── Validators/
+│   ├── ProductValidator.ts
+│   ├── CustomerValidator.ts
+│   └── OrderValidator.ts
+│
+├── start/
+│   └── routes.ts
+│
+└── database/
+    └── migrations/
 ```
 
-### Development
+---
 
-After installing dependencies with your favorite package manager, start the project locally by running:
+# 🔗 API Endpoints
 
-```bash
-yarn dev
-# or
-npm run dev
-# or even
-node ace serve --watch
+## Authentication Routes
+
+| Method | Endpoint    | Controller              | Middleware |
+| ------ | ----------- | ----------------------- | ---------- |
+| POST   | `/register` | AuthController.register | None       |
+| POST   | `/login`    | AuthController.login    | None       |
+
+---
+
+## Product Routes
+
+| Method | Endpoint         | Controller                     | Middleware                          |
+| ------ | ---------------- | ------------------------------ | ----------------------------------- |
+| GET    | `/products`      | ProductsController.index       | jwtAuth, permission:products:read   |
+| GET    | `/products/sort` | ProductsController.sort_desc   | jwtAuth, permission:products:read   |
+| GET    | `/products/:id`  | ProductsController.show        | jwtAuth, permission:products:read   |
+| POST   | `/products`      | ProductsController.store       | jwtAuth, permission:products:create |
+| POST   | `/products/bulk` | ProductsController.create_many | jwtAuth, permission:products:create |
+| PUT    | `/products/:id`  | ProductsController.update      | jwtAuth, permission:products:update |
+| DELETE | `/products/:id`  | ProductsController.delete_rec  | jwtAuth, permission:products:delete |
+
+---
+
+## Customer Routes
+
+| Method | Endpoint         | Controller                  | Middleware                           |
+| ------ | ---------------- | --------------------------- | ------------------------------------ |
+| GET    | `/customers`     | CustomersController.index   | jwtAuth, permission:customers:read   |
+| GET    | `/customers/:id` | CustomersController.show    | jwtAuth, permission:customers:read   |
+| POST   | `/customers`     | CustomersController.store   | jwtAuth, permission:customers:create |
+| PUT    | `/customers/:id` | CustomersController.update  | jwtAuth, permission:customers:update |
+| DELETE | `/customers/:id` | CustomersController.destroy | jwtAuth, permission:customers:delete |
+
+---
+
+## Order Routes
+
+| Method | Endpoint      | Controller               | Middleware                        |
+| ------ | ------------- | ------------------------ | --------------------------------- |
+| GET    | `/orders`     | OrdersController.index   | jwtAuth, permission:orders:read   |
+| GET    | `/orders/:id` | OrdersController.show    | jwtAuth, permission:orders:read   |
+| POST   | `/orders`     | OrdersController.store   | jwtAuth, permission:orders:create |
+| PUT    | `/orders/:id` | OrdersController.update  | jwtAuth, permission:orders:update |
+| DELETE | `/orders/:id` | OrdersController.destroy | jwtAuth, permission:orders:delete |
+
+---
+
+# 🛒 Order Creation Flow
+
+## Request
+
+```json
+{
+  "customer_id": 1,
+  "items": [
+    {
+      "product_name": "Laptop",
+      "quantity": 2
+    },
+    {
+      "product_name": "Keyboard",
+      "quantity": 1
+    }
+  ]
+}
 ```
 
-Open `http://localhost:3333` with your browser to see the result. If you want to use a different port, just change the `PORT` variable in `.env` file.
+---
 
-#### Having troubles with CORS?
+## Processing
 
-This boilerplate defines CORS active state by a function that returns `true` when the application is running in production.
+```text
+Validate Request
+        ↓
+Check Customer Exists
+        ↓
+Check Products Exist
+        ↓
+Create Order
+        ↓
+Create Order Items
+        ↓
+Calculate Total Amount
+        ↓
+Return Order Response
+```
 
-Check `config/cors.ts` file and change the function to return false or uncomment the line up above to disable CORS.
+---
 
-## Documentation
+## Database Records Created
 
-### Requirements
+### orders
 
-- Node.js >= 14.0.0
-- Your favorite package manager (i.e: npm, yarn)
+```json
+{
+  "id": 101,
+  "customer_id": 1,
+  "total_amount": 4500
+}
+```
 
-### Scripts
+### order_items
 
-- `yarn dev` — Starts the application in development mode at `http://localhost:3333`.
-- `yarn build` — Creates an optimized production build of your application.
-- `yarn start` — Starts the application in production mode.
-- `yarn lint` — Runs ESLint.
-- `yarn format` — Runs Prettier.
+```json
+[
+  {
+    "order_id": 101,
+    "product_id": 1,
+    "quantity": 2
+  },
+  {
+    "order_id": 101,
+    "product_id": 3,
+    "quantity": 1
+  }
+]
+```
 
-### Switch to npm
+---
 
-By default, this starter uses Yarn, but this choice is yours. If you'd like to switch to npm, delete the `yarn.lock` file, install the dependencies with `npm install`.
+# 🎯 Concepts Implemented 
 
-### Removing unwanted dependencies
-
-You don't need to use Lucid? Or maybe you don't need to use Auth? Feel free to remove it! This boilerplate is right before the configuration commands, so any unnecessary code trails won't be left behind.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for more information.
+* JWT Authentication
+* Authorization Middleware
+* Request Validation
+* CRUD Operations
+* Database Relationships
+* One-to-Many Relationships
+* Foreign Keys
+* Lucid ORM
+* TypeScript Development
+* Order Processing Workflow
