@@ -2,10 +2,13 @@ import User from 'App/Models/User'
 import jwt from 'jsonwebtoken'
 import Env from '@ioc:Adonis/Core/Env'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import { RegisterValidator, LoginValidator } from 'App/Validators/AuthValidator'
+import Hash from '@ioc:Adonis/Core/Hash'
 
 export default class AuthController {
   public async register({ request, response }: HttpContextContract) {
-    const { name, email, password, role } = request.all()
+    const payload = await request.validate(RegisterValidator)
+    const { name, email, password, role } = payload
     const existingUser = await User.query().where('email', email).first()
 
     if (existingUser) {
@@ -14,10 +17,12 @@ export default class AuthController {
       })
     }
 
+    const hashedPassword = await Hash.make(password)
+
     const user = await User.create({
       name,
       email,
-      password,
+      password: hashedPassword,
       role: role || 'customer',
     })
 
@@ -28,11 +33,20 @@ export default class AuthController {
   }
 
   public async login({ request, response }: HttpContextContract) {
-    const { email, password } = request.all()
+    const payload = await request.validate(LoginValidator)
+    const { email, password } = payload
 
     const user = await User.query().where('email', email).first()
 
-    if (!user || user.password !== password) {
+    if (!user) {
+      return response.unauthorized({
+        message: 'Invalid Credentials',
+      })
+    }
+
+    const isPasswordCorrect = await Hash.verify(user.password, password)
+
+    if (!isPasswordCorrect) {
       return response.unauthorized({
         message: 'Invalid Credentials',
       })

@@ -80,7 +80,6 @@ export default class OrdersController {
             client: trx,
           }
         )
-
         item.product.quantity = item.product.quantity - item.quantity
         await item.product.useTransaction(trx).save()
       }
@@ -110,8 +109,8 @@ export default class OrdersController {
   }
 
   public async delete_rec({ request, params }: HttpContextContract) {
-    await request.validate(DeleteOrderValidator)
-    const order = await Order.findOrFail(params.id)
+    const payload = await request.validate(DeleteOrderValidator)
+    const order = await Order.findOrFail(payload.id)
     await order.delete()
     return {
       message: 'Order deleted successfully',

@@ -35,8 +35,8 @@ export default class CustomersController {
   }
 
   public async destroy({ request, params }: HttpContextContract) {
-    await request.validate(DeleteCustomerValidator)
-    const customer = await Customer.findOrFail(params.id)
+    const payload = await request.validate(DeleteCustomerValidator)
+    const customer = await Customer.findOrFail(payload.id)
     await customer.delete()
     return {
       message: 'Customer deleted successfully',
